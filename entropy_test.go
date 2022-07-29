@@ -4,18 +4,26 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/adroge/entropy"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/adroge/entropy"
+	"github.com/adroge/entropy/mock_entropy"
 )
 
 type EntropyTestSuite struct {
 	suite.Suite
 }
 
+type EntropyMockTestSuite struct {
+	suite.Suite
+}
+
 func TestExampleTestSuite(t *testing.T) {
 	suite.Run(t, new(EntropyTestSuite))
+	suite.Run(t, new(EntropyMockTestSuite))
 }
 
 func (test *EntropyTestSuite) SetupTest() {
@@ -27,7 +35,6 @@ func (test *EntropyTestSuite) SetupTest() {
 		`()[]{}<>`,
 		`~-_=+|;:',./?\ "` + "`",
 	}
-
 	err := entropy.Alphabets(alphabets)
 	require.Nil(test.T(), err)
 	err = entropy.Bounds(30.0, 40.0, 60.0, 127.0)
@@ -109,6 +116,7 @@ func (test *EntropyTestSuite) TestRuneNotInAlphabet() {
 	_, err := entropy.Calculate("zufälliges Passwort")
 	require.NotNil(test.T(), err)
 	assert.True(test.T(), errors.Is(err, entropy.ErrUnexpectedRune))
+	assert.Equal(test.T(), "unexpected rune in input: ä", err.Error())
 }
 
 func (test *EntropyTestSuite) TestRuneInLatinAlphabet() {
@@ -165,4 +173,14 @@ func (test *EntropyTestSuite) TestChangeDescriptionVeryWeak() {
 func (test *EntropyTestSuite) TestEntropyBounds() {
 	bounds := entropy.EntropyBounds()
 	assert.EqualValues(test.T(), []float64{30.0, 40.0, 60.0, 127.0}, bounds)
+}
+
+func (test *EntropyMockTestSuite) TestMock() {
+	controller := gomock.NewController(test.T())
+	entropyMock := mock_entropy.NewMockFunction(controller)
+	entropy.SetMock(entropyMock)
+	entropyMock.EXPECT().Calculate(gomock.Any()).Return(entropy.EntropyResult{}, entropy.ErrUnexpectedRune)
+	_, err := entropy.Calculate("password")
+	require.NotNil(test.T(), err)
+	assert.True(test.T(), errors.Is(err, entropy.ErrUnexpectedRune))
 }
