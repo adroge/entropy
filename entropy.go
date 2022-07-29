@@ -9,16 +9,19 @@ package entropy
 
 import (
 	"errors"
+	"fmt"
 	"math"
 )
 
+type entropyStrength int
+
 const (
-	Invalid = iota
-	VeryWeak
+	VeryWeak entropyStrength = iota
 	Weak
 	Reasonable
 	Strong
 	VeryStrong
+	Invalid
 )
 
 var (
@@ -34,7 +37,7 @@ var (
 	_Strong     = "strong"
 	_VeryStrong = "very strong"
 
-	evaluationWords = map[int]*string{
+	evaluationWords = map[entropyStrength]*string{
 		Invalid:    &_Invalid,
 		VeryWeak:   &_VeryWeak,
 		Weak:       &_Weak,
@@ -54,7 +57,7 @@ var (
 		`~-_=+|;:',./? \"` + "`",
 	}
 
-	entropyBounds = [...]float64{
+	entropyUpperBounds = [...]float64{
 		30.0,
 		40.0,
 		60.0,
@@ -65,7 +68,7 @@ var (
 // EntropyResult contains the bits, and the evaluation that maps to exported constants
 type EntropyResult struct {
 	Bits       float64
-	Evaluation int
+	Evaluation entropyStrength
 }
 
 // DescriptionTags can be used to change the string representation of an entropy value
@@ -83,9 +86,9 @@ func (er EntropyResult) String() string {
 	return *evaluationWords[er.Evaluation]
 }
 
-// Methods defines an interface that is used for testing
+// Function defines an interface that is used for testing
 // with the generated mock_entropy code.
-type Methods interface {
+type Function interface {
 	Alphabets(newAlphabets []string) (err error)
 	Bounds(veryWeak, weak, reasonable, strong float64) (err error)
 	Calculate(input string) (result EntropyResult, err error)
@@ -93,9 +96,9 @@ type Methods interface {
 	EntropyBounds() (bounds []float64)
 }
 
-type method struct{}
+type functions struct{}
 
-var call Methods = method{}
+var call Function = functions{}
 
 func init() {
 	loadAlphabets()
@@ -116,7 +119,7 @@ func loadAlphabets() {
 func Alphabets(newAlphabets []string) (err error) {
 	return call.Alphabets(newAlphabets)
 }
-func (method) Alphabets(newAlphabets []string) (err error) {
+func (functions) Alphabets(newAlphabets []string) (err error) {
 	if len(newAlphabets) == 0 {
 		return ErrInvalidAlphabet
 	}
@@ -130,16 +133,14 @@ func (method) Alphabets(newAlphabets []string) (err error) {
 func Bounds(veryWeak, weak, reasonable, strong float64) (err error) {
 	return call.Bounds(veryWeak, weak, reasonable, strong)
 }
-func (method) Bounds(veryWeak, weak, reasonable, strong float64) (err error) {
+func (functions) Bounds(veryWeak, weak, reasonable, strong float64) (err error) {
 	if veryWeak >= weak || weak >= reasonable || reasonable >= strong {
 		return ErrInvalidEntropy
 	}
-
-	entropyBounds[0] = veryWeak
-	entropyBounds[1] = weak
-	entropyBounds[2] = reasonable
-	entropyBounds[3] = strong
-
+	entropyUpperBounds[VeryWeak] = veryWeak
+	entropyUpperBounds[Weak] = weak
+	entropyUpperBounds[Reasonable] = reasonable
+	entropyUpperBounds[Strong] = strong
 	return
 }
 
@@ -147,9 +148,8 @@ func (method) Bounds(veryWeak, weak, reasonable, strong float64) (err error) {
 func Calculate(input string) (result EntropyResult, err error) {
 	return call.Calculate(input)
 }
-func (method) Calculate(input string) (result EntropyResult, err error) {
-	result.Bits, err = calculateEntropy(input)
-	if err != nil {
+func (functions) Calculate(input string) (result EntropyResult, err error) {
+	if result.Bits, err = calculateEntropy(input); err != nil {
 		return
 	}
 	result.Evaluation, err = evaluateEntropy(result.Bits)
@@ -160,48 +160,38 @@ func calculateEntropy(input string) (entropy float64, err error) {
 	if len(input) == 0 {
 		return
 	}
-
 	characterPool := make(map[int]int)
 	for _, character := range input {
 		if _, found := runeTypes[character]; !found {
-			err = ErrUnexpectedRune
+			err = fmt.Errorf("%w: %c", ErrUnexpectedRune, character)
 			return
 		}
 		characterPool[runeTypes[character]] = len(alphabets[runeTypes[character]])
 	}
-
 	poolSize := 0
 	for _, length := range characterPool {
 		poolSize += length
 	}
-
 	entropy = math.Log2(math.Pow(float64(poolSize), float64(len(input))))
-
 	return
 }
 
-func evaluateEntropy(entropy float64) (evaluation int, err error) {
-	if math.IsNaN(entropy) || entropy < 0.0 {
-		err = ErrInvalidEntropy
-		return
-	}
-	if entropy <= entropyBounds[0] {
+func evaluateEntropy(entropy float64) (evaluation entropyStrength, err error) {
+	switch {
+	case math.IsNaN(entropy) || entropy < 0.0:
+		evaluation = Invalid
+		err = fmt.Errorf("%w: %f", ErrInvalidEntropy, entropy)
+	case entropy <= entropyUpperBounds[VeryWeak]:
 		evaluation = VeryWeak
-		return
-	}
-	if entropy <= entropyBounds[1] {
+	case entropy <= entropyUpperBounds[Weak]:
 		evaluation = Weak
-		return
-	}
-	if entropy <= entropyBounds[2] {
+	case entropy <= entropyUpperBounds[Reasonable]:
 		evaluation = Reasonable
-		return
-	}
-	if entropy <= entropyBounds[3] {
+	case entropy <= entropyUpperBounds[Strong]:
 		evaluation = Strong
-		return
+	default:
+		evaluation = VeryStrong
 	}
-	evaluation = VeryStrong
 	return
 }
 
@@ -210,7 +200,7 @@ func evaluateEntropy(entropy float64) (evaluation int, err error) {
 func Descriptions(tags DescriptionTags) (err error) {
 	return call.Descriptions(tags)
 }
-func (method) Descriptions(tags DescriptionTags) (err error) {
+func (functions) Descriptions(tags DescriptionTags) (err error) {
 	if len(tags.Invalid) == 0 || len(tags.VeryWeak) == 0 ||
 		len(tags.Weak) == 0 || len(tags.Reasonable) == 0 ||
 		len(tags.Strong) == 0 || len(tags.VeryStrong) == 0 {
@@ -229,9 +219,8 @@ func (method) Descriptions(tags DescriptionTags) (err error) {
 func EntropyBounds() (bounds []float64) {
 	return call.EntropyBounds()
 }
-
-func (method) EntropyBounds() (bounds []float64) {
+func (functions) EntropyBounds() (bounds []float64) {
 	bounds = make([]float64, 4)
-	copy(bounds, entropyBounds[:])
+	copy(bounds, entropyUpperBounds[:])
 	return
 }
