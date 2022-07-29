@@ -1,22 +1,40 @@
 # Entropy
 
-Will calculate the entropy bits from a given string. This is a metric, unintended to be used by itself, to make basic credentials more secure. It is a good idea to use this in conjunction with an updated password hashing algorithm such as [Argon2](https://github.com/P-H-C/phc-winner-argon2). The Go version can be found here: [Argon2 Go Package](golang.org/x/crypto/argon2).
+- [Entropy](#entropy)
+	- [Description](#description)
+	- [Usage](#usage)
+	- [Why](#why)
+	- [References](#references)
 
-## Installation
+## Description
 
-```sh
-go get -d github.com/adroge/entropy
-```
+This package will calculate the entropy bits from a given string. This is a metric, unintended to be used by itself, to make basic credentials more secure. It is a good idea to use this in conjunction with an updated password hashing algorithm such as [Argon2](https://github.com/P-H-C/phc-winner-argon2). The Go version can be found here: [Argon2 Go Package](golang.org/x/crypto/argon2).
 
 ## Usage
 
 ```go
-password := "monkey"
-result, err := entropy.Calculate(password)
-if err != nil {
-	fmt.Println("oops, saw an error: ", err)
+package main
+
+import (
+	"fmt"
+
+	"github.com/adroge/entropy"
+)
+
+func main() {
+	password := "monkey"
+	result, err := entropy.Calculate(password)
+	if err != nil {
+		fmt.Println("error: ", err)
+		return
+	}
+	fmt.Printf("Strength of \"%s\" is %s, with entropy: %f\n", password, result, result.Bits)
 }
-fmt.Printf("Strength is %s, with entropy: %f\n", result, result.Bits)
+```
+
+```sh
+$ go run main.go
+Strength of "monkey" is very weak, with entropy: 28.202638
 ```
 
 It's possible to change the alphabets and entropy strength bounds by utilizing the Alphabet(...) and Bounds(...) functions. If you wanted to include a subset of the Latin-1 Supplement characters, you could do it with Alphabet(...).
@@ -33,6 +51,6 @@ There are other packages out there that do similar things, but they were either,
 
 These aren't the only places, or even the original places, where the formula used can be found, but for my own reference I used the following:
 
-* [How to Calculate Password Entropy?](https://generatepasswords.org/how-to-calculate-entropy/)
-* [Password Security: Complexity vs. Length](http://resources.infosecinstitute.com/password-security-complexity-vs-length/)
-* [Entropy as a measure of password strength](https://en.wikipedia.org/wiki/Password_strength#Entropy_as_a_measure_of_password_strength)
+- [How to Calculate Password Entropy?](https://generatepasswords.org/how-to-calculate-entropy/)
+- [Password Security: Complexity vs. Length](http://resources.infosecinstitute.com/password-security-complexity-vs-length/)
+- [Entropy as a measure of password strength](https://en.wikipedia.org/wiki/Password_strength#Entropy_as_a_measure_of_password_strength)

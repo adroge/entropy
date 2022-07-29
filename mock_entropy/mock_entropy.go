@@ -5,36 +5,37 @@
 package mock_entropy
 
 import (
+	reflect "reflect"
+
 	entropy "github.com/adroge/entropy"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
-// MockMethods is a mock of Methods interface.
-type MockMethods struct {
+// MockFunction is a mock of Function interface.
+type MockFunction struct {
 	ctrl     *gomock.Controller
-	recorder *MockMethodsMockRecorder
+	recorder *MockFunctionMockRecorder
 }
 
-// MockMethodsMockRecorder is the mock recorder for MockMethods.
-type MockMethodsMockRecorder struct {
-	mock *MockMethods
+// MockFunctionMockRecorder is the mock recorder for MockFunction.
+type MockFunctionMockRecorder struct {
+	mock *MockFunction
 }
 
-// NewMockMethods creates a new mock instance.
-func NewMockMethods(ctrl *gomock.Controller) *MockMethods {
-	mock := &MockMethods{ctrl: ctrl}
-	mock.recorder = &MockMethodsMockRecorder{mock}
+// NewMockFunction creates a new mock instance.
+func NewMockFunction(ctrl *gomock.Controller) *MockFunction {
+	mock := &MockFunction{ctrl: ctrl}
+	mock.recorder = &MockFunctionMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMethods) EXPECT() *MockMethodsMockRecorder {
+func (m *MockFunction) EXPECT() *MockFunctionMockRecorder {
 	return m.recorder
 }
 
 // Alphabets mocks base method.
-func (m *MockMethods) Alphabets(newAlphabets []string) error {
+func (m *MockFunction) Alphabets(newAlphabets []string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Alphabets", newAlphabets)
 	ret0, _ := ret[0].(error)
@@ -42,13 +43,13 @@ func (m *MockMethods) Alphabets(newAlphabets []string) error {
 }
 
 // Alphabets indicates an expected call of Alphabets.
-func (mr *MockMethodsMockRecorder) Alphabets(newAlphabets interface{}) *gomock.Call {
+func (mr *MockFunctionMockRecorder) Alphabets(newAlphabets interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Alphabets", reflect.TypeOf((*MockMethods)(nil).Alphabets), newAlphabets)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Alphabets", reflect.TypeOf((*MockFunction)(nil).Alphabets), newAlphabets)
 }
 
 // Bounds mocks base method.
-func (m *MockMethods) Bounds(veryWeak, weak, reasonable, strong float64) error {
+func (m *MockFunction) Bounds(veryWeak, weak, reasonable, strong float64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Bounds", veryWeak, weak, reasonable, strong)
 	ret0, _ := ret[0].(error)
@@ -56,13 +57,13 @@ func (m *MockMethods) Bounds(veryWeak, weak, reasonable, strong float64) error {
 }
 
 // Bounds indicates an expected call of Bounds.
-func (mr *MockMethodsMockRecorder) Bounds(veryWeak, weak, reasonable, strong interface{}) *gomock.Call {
+func (mr *MockFunctionMockRecorder) Bounds(veryWeak, weak, reasonable, strong interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Bounds", reflect.TypeOf((*MockMethods)(nil).Bounds), veryWeak, weak, reasonable, strong)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Bounds", reflect.TypeOf((*MockFunction)(nil).Bounds), veryWeak, weak, reasonable, strong)
 }
 
 // Calculate mocks base method.
-func (m *MockMethods) Calculate(input string) (entropy.EntropyResult, error) {
+func (m *MockFunction) Calculate(input string) (entropy.EntropyResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Calculate", input)
 	ret0, _ := ret[0].(entropy.EntropyResult)
@@ -71,13 +72,13 @@ func (m *MockMethods) Calculate(input string) (entropy.EntropyResult, error) {
 }
 
 // Calculate indicates an expected call of Calculate.
-func (mr *MockMethodsMockRecorder) Calculate(input interface{}) *gomock.Call {
+func (mr *MockFunctionMockRecorder) Calculate(input interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Calculate", reflect.TypeOf((*MockMethods)(nil).Calculate), input)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Calculate", reflect.TypeOf((*MockFunction)(nil).Calculate), input)
 }
 
 // Descriptions mocks base method.
-func (m *MockMethods) Descriptions(tags entropy.DescriptionTags) error {
+func (m *MockFunction) Descriptions(tags entropy.DescriptionTags) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Descriptions", tags)
 	ret0, _ := ret[0].(error)
@@ -85,13 +86,13 @@ func (m *MockMethods) Descriptions(tags entropy.DescriptionTags) error {
 }
 
 // Descriptions indicates an expected call of Descriptions.
-func (mr *MockMethodsMockRecorder) Descriptions(tags interface{}) *gomock.Call {
+func (mr *MockFunctionMockRecorder) Descriptions(tags interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Descriptions", reflect.TypeOf((*MockMethods)(nil).Descriptions), tags)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Descriptions", reflect.TypeOf((*MockFunction)(nil).Descriptions), tags)
 }
 
 // EntropyBounds mocks base method.
-func (m *MockMethods) EntropyBounds() []float64 {
+func (m *MockFunction) EntropyBounds() []float64 {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EntropyBounds")
 	ret0, _ := ret[0].([]float64)
@@ -99,7 +100,7 @@ func (m *MockMethods) EntropyBounds() []float64 {
 }
 
 // EntropyBounds indicates an expected call of EntropyBounds.
-func (mr *MockMethodsMockRecorder) EntropyBounds() *gomock.Call {
+func (mr *MockFunctionMockRecorder) EntropyBounds() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EntropyBounds", reflect.TypeOf((*MockMethods)(nil).EntropyBounds))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EntropyBounds", reflect.TypeOf((*MockFunction)(nil).EntropyBounds))
 }
